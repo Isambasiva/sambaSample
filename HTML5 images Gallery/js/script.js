@@ -1,65 +1,68 @@
-$(document).ready(function() {
+$(document).ready(function(){
 	var items = $('#gallery li'),
-		itemByTags = {};
-
-/*
-* @samba extract the tags into the arrays
-* Assign the data id attribute to the element.
-*/
+	
+	
+		itemsByTags = {};
+		
+	//Loop through tags
 	items.each(function(i){
-		
 		var elem = $(this),
-		tags = elem.data('lists').split(',');
-		elem.attr("data-id",i);
+		tags = elem.data('tags').split(',');
 		
-		console.log("number of elements::" + i + "::" + tags );
+		//Add data attribute for quicksand
+		elem.attr('data-id',i);
 		
-		/*
-			@ Assigning non repeated items into the array
-		*/
-		$.each(tags, function(key, value){
+		$.each(tags,function(key,value){
+			//Remove whitespace
 			value = $.trim(value);
-			if(!(value in itemByTags)){
-				itemByTags[value]=[];
+			
+			if(!(value in itemsByTags)){
+				itemsByTags[value] = [];
 			}
-				itemByTags[value].push(elem);
-
+			
+			//Adding same value categories into 
+			itemsByTags[value].push(elem);
 		});
 	});
 	
-
-	//Creating a List of navigation bar
-	function createLists(text, items){
+	console.log(itemsByTags);
+	//Create "All Items" option
+	createList('All Items',items);
+	
+	$.each(itemsByTags, function(k, v){
+		createList(k, v);
+	});
+	
+	//Click Handler
+	$('#navbar a').live('click', function(e){
+		var link = $(this);
 		
-		var ul= $('<ul>', {'class':'hidden'});
+		//Add active class
+		link.addClass('active').siblings().removeClass('active');
+		
+		$('#gallery').quicksand(link.data('list').find('li'));
+		e.preventDefault();
+	});
+	
+	$('#navbar a:first').click();
+	
+	//Create the lists
+	function createList(text,items){
+		//Create empty ul
+		var ul = $('<ul>');
 		
 		$.each(items, function(){
-			$(this).clone().appendTo(ul);
-			
+			$(this).clone().appendTo(ul)
 		});
 		
-		//console.log(ul);
-		
+		//Add gallery div
 		ul.appendTo('#gallery');
 		
-		//create menu
-		var a = $('<a>', {
-			href:'#',
+		//Create menu item
+		var a = $('<a>',{
 			html:text,
+			href:'#',
 			data:{list:ul}
-		}).appendTo('#main-nav');
+		}).appendTo('#navbar');
 	}
-	
-	createLists('All items', items);
-	$.each(itemByTags, function(k,v){
-		createLists(k,v);
-	});
-	
-	$('#main-nav a').on('click', function(e){
-		var link = $(this);
-		link.addClass('active').siblings().removeClass('active');
-		$("#gallery").quicksand(link.data('list').find('li'));
-	});
-	
-	
 });
